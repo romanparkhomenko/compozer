@@ -1,26 +1,105 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useRef, useState } from 'react';
+import { compose, useInstrument, usePlaying, useDimensions } from './hooks';
+import { instruments } from './utilities/instruments';
+import { Instrument, MidiSong, InstrumentControls, Plugins, Animation } from './components';
+import { motion, useCycle } from 'framer-motion';
 
-function App() {
+const WithBox = value => <div>{value}</div>;
+
+const WithButton = value => <button onClick={() => console.info(value)}>{value}</button>;
+
+const Test = ({ children }) => compose(WithBox, WithButton)(<span>{children}</span>);
+
+export const App = () => {
+  const instrument = useInstrument(instruments[0]);
+  const customInstrument = instruments[instrument.value];
+  const started = usePlaying(false);
+  const [isOpen, toggleOpen] = useCycle(false, true);
+  const containerRef = useRef(null);
+  const { height } = useDimensions(containerRef);
+
+  const controls = {
+    open: (height = 1000) => ({
+      display: 'block',
+      clipPath: `circle(${height * 2 + 200}px at 40px 40px)`,
+      transition: {
+        type: 'spring',
+        stiffness: 20,
+        restDelta: 2,
+      },
+    }),
+    closed: {
+      // display: 'none',
+      clipPath: 'circle(0px at 40px 40px)',
+      transition: {
+        delay: 0,
+        type: 'spring',
+        stiffness: 400,
+        damping: 40,
+      },
+    },
+
+    short: {
+      width: '60%',
+      right: '-1rem',
+      transition: {
+        delay: 0.1,
+        type: 'spring',
+        stiffness: 1000,
+        restDelta: 2,
+        damping: 50,
+      },
+    },
+
+    big: {
+      width: '100%',
+      right: 'initial',
+      transition: {
+        delay: 0.1,
+        type: 'spring',
+        stiffness: 1000,
+        restDelta: 2,
+        damping: 40,
+      },
+    },
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <motion.div animate={isOpen ? 'short' : 'big'}>
+        <motion.div className="animation">
+          <Animation
+            className="animation-container"
+            customInstrument={customInstrument}
+            isPlaying={started.value}
+            controlsOpen={isOpen}
+          />
+
+          <motion.div className="show-controls" variants={controls}>
+            <button className="control-toggle" onClick={toggleOpen}>
+              {isOpen ? 'HIDE' : 'SHOW'} CONTROLS
+            </button>
+            <button className="play-toggle" onClick={() => started.setValue(!started.value)}>
+              {started.value ? 'STOP' : 'PLAY MUSIC'}
+            </button>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+      <motion.div
+        initial={false}
+        animate={isOpen ? 'open' : 'closed'}
+        custom={height}
+        ref={containerRef}
+      >
+        <motion.div className="controls-menu" variants={controls}>
+          <MidiSong className="song-container" player={customInstrument} musicStarted={started}>
+            <Instrument className="instrument" instrument={instrument}>
+              <InstrumentControls className="effect" customInstrument={customInstrument} />
+            </Instrument>
+            <Plugins className="plugins" customInstrument={customInstrument} />
+          </MidiSong>
+        </motion.div>
+      </motion.div>
     </div>
   );
-}
-
-export default App;
+};

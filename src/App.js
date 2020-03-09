@@ -1,16 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { compose, useInstrument, usePlaying, useDimensions } from './hooks';
+import { motion, useCycle } from 'framer-motion';
+import { compose, useInstrument, usePlaying, useDimensions, useWindowWidth } from './hooks';
 import { instruments } from './utilities/instruments';
 import { Instrument, MidiSong, InstrumentControls, Plugins, Animation } from './components';
-import { motion, useCycle } from 'framer-motion';
-
-const WithBox = value => <div>{value}</div>;
-
-const WithButton = value => <button onClick={() => console.info(value)}>{value}</button>;
-
-const Test = ({ children }) => compose(WithBox, WithButton)(<span>{children}</span>);
 
 export const App = () => {
+  const mobile = useWindowWidth();
   const instrument = useInstrument(instruments[0]);
   const customInstrument = instruments[instrument.value];
   const started = usePlaying(false);
@@ -20,7 +15,6 @@ export const App = () => {
 
   const controls = {
     open: (height = 1000) => ({
-      display: 'block',
       clipPath: `circle(${height * 2 + 200}px at 40px 40px)`,
       transition: {
         type: 'spring',
@@ -29,7 +23,6 @@ export const App = () => {
       },
     }),
     closed: {
-      // display: 'none',
       clipPath: 'circle(0px at 40px 40px)',
       transition: {
         delay: 0,
@@ -40,7 +33,7 @@ export const App = () => {
     },
 
     short: {
-      width: '60%',
+      width: mobile <= 800 ? '100%' : '75%',
       right: '0',
       transition: {
         delay: 0.1,
@@ -66,28 +59,27 @@ export const App = () => {
 
   return (
     <div className="app">
-      <motion.div animate={isOpen ? 'short' : 'big'}>
-        <motion.div className="animation">
-          <Animation
-            className="animation-container"
-            customInstrument={customInstrument}
-            isPlaying={started.value}
-            controlsOpen={isOpen}
-          />
+      <motion.div animate={isOpen ? 'short' : 'big'} className="animation">
+        <Animation
+          className="animation-container"
+          customInstrument={customInstrument}
+          isPlaying={started.value}
+          controlsOpen={isOpen}
+          isMobile={mobile <= 800}
+        />
 
-          <motion.div className="show-controls" variants={controls}>
-            <button className="control-toggle" onClick={toggleOpen}>
-              {isOpen ? 'HIDE' : 'SHOW'} CONTROLS
-            </button>
-            <button className="play-toggle" onClick={() => started.setValue(!started.value)}>
-              {started.value ? 'STOP' : 'PLAY MUSIC'}
-            </button>
-          </motion.div>
+        <motion.div className="show-controls" variants={controls}>
+          <button className="control-toggle" onClick={toggleOpen}>
+            {isOpen ? 'HIDE' : 'SHOW'} CONTROLS
+          </button>
+          <button className="play-toggle" onClick={() => started.setValue(!started.value)}>
+            {started.value ? 'STOP' : 'PLAY MUSIC'}
+          </button>
         </motion.div>
       </motion.div>
       <motion.div
         initial={false}
-        animate={isOpen ? 'open' : 'closed'}
+        animate={isOpen || mobile <= 800 ? 'open' : 'closed'}
         custom={height}
         ref={containerRef}
       >

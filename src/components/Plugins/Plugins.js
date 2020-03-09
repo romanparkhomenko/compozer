@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import Select from 'react-select';
+import { faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { effects } from '../../utilities/effects';
 import { colors } from '../../styles';
 import { useAudioEffects } from '../../hooks';
 import { InputSlider } from '../index';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 export const Plugins = ({ className, customInstrument, children }) => {
   const [showControls, setShowControls] = useState(false);

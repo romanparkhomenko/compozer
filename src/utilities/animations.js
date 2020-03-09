@@ -1,5 +1,5 @@
 import colors from '../styles/colors';
-import { Const, Create, Curve, Geom, Group, Num, Circle, Pt, Line } from 'pts';
+import { Const, Create, Curve, Geom, Group, Num } from 'pts';
 
 export const colorShades = [
   colors.oxford,
@@ -30,34 +30,6 @@ export const getCtrlPoints = (t, space, radius, ctrls) => {
   return temp;
 };
 
-export const getWaveForms = (sound, space, form, time) => {
-  // create a line and get 200 interpolated points
-  let offset = space.size.$multiply(0.2).y;
-  const bins = 256;
-  let line = new Group(new Pt(0, offset), new Pt(space.size.x, space.size.y - offset));
-  let pts = Line.subpoints(line, bins);
-
-  // get perpendicular unit vectors from each points on the line
-  let pps = pts.map(p => Geom.perpendicular(p.$subtract(line[0]).unit()).add(p));
-
-  let angle = (space.center.x / space.size.x) * Const.two_pi * 2;
-
-  // draw each perpendicular like a sine-wave
-  pps.forEach((pp, i) => {
-    let t = (i / bins) * Const.quarter_pi + angle + Num.cycle((time % 10000) / 10000);
-
-    if (i % 2 === 0) {
-      pp[0].to(Geom.interpolate(pts[i], pp[0], Math.sin(t) * offset * 2));
-      pp[1].to(pts[i]);
-      form.stroke('#0c6', 2).line(pp);
-    } else {
-      pp[0].to(pts[i]);
-      pp[1].to(Geom.interpolate(pts[i], pp[1], Math.cos(t) * offset * 2));
-      form.stroke('#f03', 2).line(pp);
-    }
-  });
-};
-
 export const getSpaceAndPointer = (sound, space, form, pts) => {
   // check if each point is within circle's range
   for (let i = 0, len = pts.length; i < len; i++) {
@@ -74,14 +46,26 @@ export const generateTitle = (space, form) => {
     .text(space.center, 'compozer');
 };
 
-export const generateFaceDude = (sound, space, form, timings) => {
-  const radius = space.size.minValue().value / 3.5;
-  const ctrls = Create.radialPts(space.center, radius, 10, -Const.pi - Const.quarter_pi);
+export const generateFaceDude = (sound, space, form, timings, controlsOpen, isMobile) => {
+  let radius = space.size.minValue().value / 3.5;
+  let ctrls = Create.radialPts(space.center, radius, 10, -Const.pi - Const.quarter_pi);
+  let anchors = getCtrlPoints(timings, space, radius, ctrls);
+  let curve = Curve.bspline(anchors, 4);
+  if (!controlsOpen) {
+    form.fillOnly(colors.seablue).polygon(curve);
+  } else {
+    radius = space.size.minValue().value / 4.5;
+    ctrls = Create.radialPts(
+      space.center.$add({ x: 100 }),
+      radius,
+      10,
+      -Const.pi - Const.quarter_pi,
+    );
+    anchors = getCtrlPoints(timings, space, radius, ctrls);
+    curve = Curve.bspline(anchors, 4);
+    form.fillOnly(colors.seablue).polygon(curve);
+  }
   const bins = 256;
-  const anchors = getCtrlPoints(timings, space, radius, ctrls);
-  const curve = Curve.bspline(anchors, 4);
-  const center = anchors.centroid();
-  form.fillOnly(colors.seablue).polygon(curve);
 
   // initiate spikes array, evenly distributed spikes aroundthe face
   const spikes = [];
@@ -123,9 +107,14 @@ export const generateFaceDude = (sound, space, form, timings) => {
     form.fillOnly(colorShades[i % colorShades.length]).point(tris[i][1], freqs[i].y * 10, 'circle');
   }
 
-  // Draw lips with frequency data
+  // Draw lips with frequency data. Adjust accordingly for open controls
+  let faceCenter = space.center.x - radius / 2;
+  if (controlsOpen) {
+    let centerPoint = space.center.$add({ x: 100 });
+    faceCenter = centerPoint.x - radius / 2;
+  }
   const tdata = sound
-    .timeDomainTo([radius, 12], [space.center.x - radius / 2, 0])
+    .timeDomainTo([radius, 12], [faceCenter, 0])
     .map(
       (t, i) =>
         new Group(
@@ -136,16 +125,20 @@ export const generateFaceDude = (sound, space, form, timings) => {
 
   for (let i = 0, len = tdata.length; i < len; i++) {
     const t2 = [
-      tdata[i].interpolate(-1.25 + 0.2 * fScale),
+      tdata[i].interpolate(-1.5 + 0.2 * fScale),
       tdata[i].interpolate(1.5 + 0.3 * fScale),
     ];
     form.strokeOnly(colors.recordRed).line(tdata[i]);
     form.strokeOnly(colors.black, 3).line(t2);
   }
 
-  // draw eyes
-  const eyeRight = space.center.clone().toAngle(-Const.quarter_pi - 0.2, radius / 2, true);
-  const eyeLeft = space.center.clone().toAngle(-Const.quarter_pi - 1.4, radius / 2, true);
+  // Draw eyes according to controls open
+  let eyesCenter = space.center;
+  if (controlsOpen) {
+    eyesCenter = space.center.$add({ x: 100 });
+  }
+  const eyeRight = eyesCenter.clone().toAngle(-Const.quarter_pi - 0.2, radius / 2, true);
+  const eyeLeft = eyesCenter.clone().toAngle(-Const.quarter_pi - 1.4, radius / 2, true);
   form.fillOnly('#fff').ellipse(eyeLeft, [18 + 15 * fScale, 18 + 15 * fScale], 0 - 0.25 * fScale);
   form.fillOnly('#fff').ellipse(eyeRight, [18 + 15 * fScale, 18 + 15 * fScale], 0 + 0.25 * fScale);
 
@@ -156,10 +149,23 @@ export const generateFaceDude = (sound, space, form, timings) => {
   form.fill(colors.black).points([eyeBallLeft, eyeBallRight], 15 + 10 * fScale, 'circle');
 };
 
-export const generateBlankFaceDude = (sound, space, form, timings) => {
-  const radius = space.size.minValue().value / 3.5;
-  const ctrls = Create.radialPts(space.center, radius, 10, -Const.pi - Const.quarter_pi);
-  const anchors = getCtrlPoints(timings, space, radius, ctrls);
-  const curve = Curve.bspline(anchors, 4);
-  form.fillOnly(colors.seablue).polygon(curve);
+export const generateBlankFaceDude = (sound, space, form, timings, controlsOpen, isMobile) => {
+  let radius = space.size.minValue().value / 3.5;
+  let ctrls = Create.radialPts(space.center, radius, 10, -Const.pi - Const.quarter_pi);
+  let anchors = getCtrlPoints(timings, space, radius, ctrls);
+  let curve = Curve.bspline(anchors, 4);
+  if (!controlsOpen) {
+    form.fillOnly(colors.seablue).polygon(curve);
+  } else {
+    radius = space.size.minValue().value / 4.5;
+    ctrls = Create.radialPts(
+      space.center.$add({ x: 100 }),
+      radius,
+      10,
+      -Const.pi - Const.quarter_pi,
+    );
+    anchors = getCtrlPoints(timings, space, radius, ctrls);
+    curve = Curve.bspline(anchors, 4);
+    form.fillOnly(colors.seablue).polygon(curve);
+  }
 };

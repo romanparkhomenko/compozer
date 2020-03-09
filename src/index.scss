@@ -64,3 +64,33 @@ body {
         overflow: scroll;
     }
 }
+
+@media screen and (max-width: 800px) {
+    .app {
+        div.animation {
+            position: relative;
+            background: transparent;
+            div.show-controls {
+                position: relative;
+                .control-toggle {
+                    display: none;
+                }
+                .play-toggle {
+                    width: 100%;
+                }
+                background: #f0f0f0;
+            }
+        }
+        .controls-menu {
+            position: relative;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 100%;
+            background: #f0f0f0;
+            height: 100%;
+            overflow: scroll;
+        }
+    }
+}

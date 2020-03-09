@@ -1,25 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import colors from '../../styles/colors';
 import { SoundCanvas } from '../index';
 
-export const Animation = ({ className, customInstrument, isPlaying, controlsOpen }) => {
-  // Sound object from PTS library. This allows frequencies to be displayed
-  // properly in the animation
-  // const sound = Sound.from(Tone.Master, Tone.Master.context, 'input').analyze(256);
-
-  return (
-    <div className={className}>
+export const Animation = ({ className, customInstrument, isPlaying, controlsOpen, isMobile }) => {
+  const [canvas, setCanvas] = useState(null);
+  useEffect(() => {
+    setCanvas(
       <SoundCanvas
         background={colors.fog}
         customInstrument={customInstrument}
-        style={{ height: '100vh' }}
+        style={{ height: isMobile ? '50vh' : '100vh' }}
         isPlaying={isPlaying}
         controlsOpen={controlsOpen}
-      />
-    </div>
-  );
+        isMobile={isMobile}
+      />,
+    );
+  }, [isMobile, isPlaying, controlsOpen]);
+
+  return <div className={className}>{canvas}</div>;
 };
 
 Animation.propTypes = {

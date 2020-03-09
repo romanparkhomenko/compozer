@@ -1,14 +1,12 @@
-import React, { useEffect } from 'react';
-import { Circle, Create, Sound, Const, Curve, Geom, Group, Num, Shaping, Rectangle } from 'pts';
+import React from 'react';
+import { Create, Sound } from 'pts';
 import Tone from 'tone';
-import { PtsCanvas, QuickStartCanvas } from 'react-pts-canvas';
+import { PtsCanvas } from 'react-pts-canvas';
 import colors from '../../styles/colors';
 import {
   generateFaceDude,
-  generateTitle,
   generateBlankFaceDude,
   getSpaceAndPointer,
-  getWaveForms,
 } from '../../utilities/animations';
 
 export default class SoundCanvas extends PtsCanvas {
@@ -36,13 +34,13 @@ export default class SoundCanvas extends PtsCanvas {
   // Override PtsCanvas' animate function
   animate(time, ftime) {
     const { space, form, pts, colorShades, sound } = this;
-    const { isPlaying } = this.props;
+    const { isPlaying, controlsOpen, isMobile } = this.props;
 
     getSpaceAndPointer(sound, space, form, pts);
     if (isPlaying) {
-      generateFaceDude(sound, space, form, time);
+      generateFaceDude(sound, space, form, time, controlsOpen, isMobile);
     } else {
-      generateBlankFaceDude(sound, space, form, time);
+      generateBlankFaceDude(sound, space, form, time, controlsOpen, isMobile);
     }
   }
 }

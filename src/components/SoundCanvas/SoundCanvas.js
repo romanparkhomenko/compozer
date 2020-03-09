@@ -23,17 +23,8 @@ export default class SoundCanvas extends PtsCanvas {
     this.pts = Create.distributeRandom(this.space.innerBound, 200);
   }
 
-  // componentDidUpdate() {
-  //   if (this.props.isPlaying === false) {
-  //     this.space.pause();
-  //   } else {
-  //     this.space.resume();
-  //   }
-  // }
-
   // Override PtsCanvas' start function
   start(space, bound) {
-    // this.space.pause();
     this.createCanvas();
   }
 

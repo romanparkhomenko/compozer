@@ -14,26 +14,20 @@ export const MidiSong = ({ className, player, children, musicStarted }) => {
       stopPlaying();
     }
   }, [musicStarted]);
-  const [playing, setPlaying] = useState(false);
   const [midiFile, setMidiFile] = useState('beethoven');
   useEffect(() => {
-    setPlaying(false);
     musicStarted.setValue(false);
     Tone.Transport.cancel(0);
     getMidi().then(midi => console.info('midi file effect'));
   }, [midiFile, player]);
 
-  const [songData, setSongData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSong, setActiveSong] = useState(null);
 
   const getMidi = () =>
     Midi.fromUrl(`./audio/${midiFile}.mid`).then(midi => {
-      setSongData(midi);
       const events = [];
-      // const synths = [];
       midi.tracks.forEach(track => {
-        // synths.push(player);
         // schedule all of the events
         track.notes.forEach(note => {
           const event = {
@@ -63,14 +57,11 @@ export const MidiSong = ({ className, player, children, musicStarted }) => {
   const playMIDI = () => {
     activeSong.start('+0.01s');
     Tone.Transport.start('+0.01s');
-    setPlaying(true);
     setTimeout(() => console.info(Tone.Transport.state), 500);
   };
 
   const stopPlaying = () => {
-    Tone.Transport.seconds = 0;
     Tone.Transport.stop(Tone.now());
-    setPlaying(false);
     console.info(Tone.Transport.state);
   };
 

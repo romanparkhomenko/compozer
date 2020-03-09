@@ -41,7 +41,7 @@ export const App = () => {
 
     short: {
       width: '60%',
-      right: '-1rem',
+      right: '0',
       transition: {
         delay: 0.1,
         type: 'spring',
@@ -53,7 +53,7 @@ export const App = () => {
 
     big: {
       width: '100%',
-      right: 'initial',
+      right: '0',
       transition: {
         delay: 0.1,
         type: 'spring',

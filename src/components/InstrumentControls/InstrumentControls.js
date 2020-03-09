@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { InputSlider } from '../index';
 import { colors } from '../../styles';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const InstrumentControls = ({ className, customInstrument, children }) => {
   const [showControls, setShowControls] = useState(true);
+  const [renderedControls, setRenderedControls] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    console.info(customInstrument);
+    setRenderedControls(renderControls());
+    setLoading(false);
+  }, [customInstrument]);
   const allowedEffects = [
     'oscillator',
     'envelope',
@@ -86,8 +93,9 @@ export const InstrumentControls = ({ className, customInstrument, children }) =>
     }
   };
 
-  const renderControls = () =>
-    controls.map(control => (
+  const renderControls = () => {
+    console.info('Rendered instrument controls');
+    return controls.map(control => (
       <div className="control-block" key={`${control}block`}>
         <h3>{control.toUpperCase()}</h3>
         <div className="controls">
@@ -157,6 +165,7 @@ export const InstrumentControls = ({ className, customInstrument, children }) =>
         </div>
       </div>
     ));
+  };
 
   return (
     <div className={className}>
@@ -166,7 +175,7 @@ export const InstrumentControls = ({ className, customInstrument, children }) =>
           <FontAwesomeIcon icon={faChevronUp} rotation={showControls ? 180 : null} />
         </p>
         <div className={showControls ? 'control-grid open' : 'control-grid'}>
-          {renderControls()}
+          {!loading && renderedControls}
           {children}
         </div>
       </div>

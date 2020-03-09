@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import { Knob } from '../index';
 import { colors } from '../../styles';
 
-export const InputSlider = props => {
-  const [state, setState] = useState(props.initialValue);
+export const InputSlider = ({
+  className,
+  initialValue,
+  minValue,
+  maxValue,
+  label,
+  handleChange,
+}) => {
+  const [state, setState] = useState(initialValue);
   const handleSliderChange = e => {
     setState(e);
-    props.handleChange(e.toFixed(1));
+    handleChange(e.toFixed(1));
   };
   return (
-    <div className={props.className}>
+    <div className={className}>
       <Knob
         size={60}
         numTicks={20}
         degrees={260}
-        min={props.minValue}
-        max={props.maxValue}
+        min={minValue}
+        max={maxValue}
         value={state}
         color
         onChange={e => handleSliderChange(e)}
       />
-      <p className="effect-label">{props.label}</p>
+      <p className="effect-label">{label}</p>
     </div>
   );
 };

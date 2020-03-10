@@ -38,7 +38,7 @@ export const Intro = ({ className, customInstrument }) => {
             <button
               onClick={() => {
                 toggleAudioContext();
-                customInstrument.voices[0].oscillator.type = 'fatsawtooth';
+                customInstrument.voices[0].oscillator.type = 'fatsawtooth51';
                 Tone.Transport.start(0);
               }}
             >

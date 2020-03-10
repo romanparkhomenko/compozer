@@ -105,7 +105,12 @@ export default class Knob extends Component {
               />
             ))}
         </div>
-        <div className="knob outer" style={oStyle} onMouseDown={this.startDrag}>
+        <div
+          className="knob outer"
+          style={oStyle}
+          onMouseDown={this.startDrag}
+          onTouchStart={this.startDrag}
+        >
           <div className="knob inner" style={iStyle}>
             <div className="grip" />
             <p id="knob-value-display" style={pStyle}>

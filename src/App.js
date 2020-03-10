@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { motion, useCycle } from 'framer-motion';
 import { useInstrument, usePlaying, useDimensions, useWindowWidth } from './hooks';
 import { instruments } from './utilities/instruments';
-import { Instrument, MidiSong, InstrumentControls, Plugins, Animation } from './components';
+import { Instrument, MidiSong, InstrumentControls, Plugins, Animation, Intro } from './components';
 
 export const App = () => {
   const mobile = useWindowWidth();
@@ -59,6 +59,7 @@ export const App = () => {
 
   return (
     <div className="app">
+      <Intro className="intro-section" />
       <motion.div animate={isOpen ? 'short' : 'big'} className="animation">
         <Animation
           className="animation-container"
@@ -67,7 +68,6 @@ export const App = () => {
           controlsOpen={isOpen}
           isMobile={mobile <= 800}
         />
-
         <motion.div className="show-controls" variants={controls}>
           <button className="control-toggle" onClick={toggleOpen}>
             {isOpen ? 'HIDE' : 'SHOW'} CONTROLS
@@ -77,6 +77,7 @@ export const App = () => {
           </button>
         </motion.div>
       </motion.div>
+
       <motion.div
         initial={false}
         animate={isOpen || mobile <= 800 ? 'open' : 'closed'}

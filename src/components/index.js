@@ -6,3 +6,4 @@ export { default as SoundCanvas } from './SoundCanvas';
 export { default as InputSlider } from './InputSlider';
 export { default as Plugins } from './Plugins';
 export { default as Animation } from './Animation';
+export { default as Intro } from './Intro';

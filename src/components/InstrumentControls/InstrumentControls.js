@@ -5,6 +5,7 @@ import { faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { InputSlider } from '../index';
 import { colors } from '../../styles';
+import { compoze } from '../../hooks';
 
 export const InstrumentControls = ({ className, customInstrument, children }) => {
   const [showControls, setShowControls] = useState(true);
@@ -33,39 +34,39 @@ export const InstrumentControls = ({ className, customInstrument, children }) =>
     'baseFrequency',
     'octaves',
     'exponent',
-    'harmoncity',
+    'harmonicity',
     'modulationIndex',
     'modulation',
     'modulationEnvelope',
+    'partials',
   ];
 
   // If instrument has voices, perform effect changes on the voices.
   const hasVoices = !!customInstrument.voices;
-  const controls = [];
 
-  if (!hasVoices) {
-    Object.keys(customInstrument).map(key => {
-      if (allowedEffects.includes(key)) {
-        controls.push(key);
-      }
-    });
-  } else {
-    Object.keys(customInstrument.voices[0]).map(key => {
-      if (allowedEffects.includes(key)) {
-        controls.push(key);
-        const voiceProp = customInstrument.voices[0];
-        customInstrument[key] = voiceProp[key];
-      }
-    });
-  }
+  /** This is where the magic happens.
+   * We dynamically create effect parameters based on the attributes
+   * the instrument object has using function composition via the compoze function */
+  const renderControls = () => {
+    console.info('Compoze Controls called');
+    if (hasVoices) {
+      return compoze(
+        renderControlSliders,
+        getEffectParams,
+        getControlEffects,
+      )(customInstrument.voices[0]);
+    }
+    return compoze(renderControlSliders, getEffectParams, getControlEffects)(customInstrument);
+  };
 
-  const handleOscillator = oscillatorValue => {
-    if (customInstrument.oscillator) {
-      customInstrument.oscillator.type = oscillatorValue;
+  const handleOscillator = (oscillatorType, oscillatorValue) => {
+    if (customInstrument[oscillatorType]) {
+      customInstrument[oscillatorType].type = oscillatorValue;
     }
     if (customInstrument.voices) {
       for (let i = 0; i < customInstrument.voices.length; i++) {
-        customInstrument.voices[i].oscillator.type = oscillatorValue;
+        const voice = customInstrument.voices[i];
+        voice[oscillatorType].type = oscillatorValue;
       }
     }
   };
@@ -93,78 +94,159 @@ export const InstrumentControls = ({ className, customInstrument, children }) =>
     }
   };
 
-  const renderControls = () => {
-    console.info('Rendered instrument controls');
-    return controls.map(control => (
-      <div className="control-block" key={`${control}block`}>
-        <h3>{control.toUpperCase()}</h3>
-        <div className="controls">
-          {typeof customInstrument[control] !== 'object' && (
+  const renderControlSliders = effectParams => {
+    const inputs = [];
+    effectParams.map((effect, idx) => {
+      if (effect.properties) {
+        const propertySliders = [];
+        effect.properties.map(prop => {
+          propertySliders.push(
             <InputSlider
               className="effect-slider"
-              label={control}
-              key={control}
-              initialValue={customInstrument[control]}
-              step={0.1}
-              minValue={0.1}
-              maxValue={12}
-              handleChange={value => {
-                customInstrument[control] = value;
-              }}
-            />
-          )}
-
-          {Object.keys(customInstrument[control]).map(key => {
-            if (allowedEffects.includes(key)) {
-              const controlProp = customInstrument[control];
-              const hasValue = !!controlProp.value;
-              let maxValue = 3;
-              let minValue = 0.1;
-              if (hasValue) {
-                // eslint-disable-next-line prefer-destructuring
-                minValue = controlProp.minValue;
-                maxValue = controlProp.maxValue > 3000 ? 5000 : controlProp.maxValue;
-              }
-              return (
-                <InputSlider
-                  label={key}
-                  initialValue={controlProp[key]}
-                  step={0.1}
-                  minValue={minValue}
-                  maxValue={maxValue}
-                  key={key}
-                  handleChange={value => handleChange(control, controlProp, key, value)}
-                />
-              );
-            }
-          })}
-
-          {control === 'oscillator' && (
+              label={prop.name}
+              initialValue={prop.initialValue}
+              step={prop.step}
+              minValue={prop.minValue}
+              maxValue={prop.maxValue}
+              key={effect.name + prop.name + idx}
+              handleChange={prop.handleChange}
+            />,
+          );
+        });
+        inputs.push({ component: propertySliders, name: effect.name });
+      } else if (effect.type) {
+        inputs.push({
+          component: (
             <>
-              <button onClick={() => handleOscillator('sine')}>Sine</button>
-              <button onClick={() => handleOscillator('amsine')}>AM Sine</button>
-              <button onClick={() => handleOscillator('fmsine')}>FM Sine</button>
-              <button onClick={() => handleOscillator('fatsine')}>Fat Sine</button>
+              <button onClick={() => handleOscillator(effect.name, 'sine')}>Sine</button>
+              <button onClick={() => handleOscillator(effect.name, 'amsine')}>AM Sine</button>
+              <button onClick={() => handleOscillator(effect.name, 'fmsine')}>FM Sine</button>
+              <button onClick={() => handleOscillator(effect.name, 'fatsine')}>Fat Sine</button>
 
-              <button onClick={() => handleOscillator('triangle')}>Triangle</button>
-              <button onClick={() => handleOscillator('amtriangle')}>AM Triangle</button>
-              <button onClick={() => handleOscillator('fmtriangle')}>FM Triangle</button>
-              <button onClick={() => handleOscillator('fattriangle')}>Fat Triangle</button>
+              <button onClick={() => handleOscillator(effect.name, 'triangle')}>Triangle</button>
+              <button onClick={() => handleOscillator(effect.name, 'amtriangle')}>
+                AM Triangle
+              </button>
+              <button onClick={() => handleOscillator(effect.name, 'fmtriangle')}>
+                FM Triangle
+              </button>
+              <button onClick={() => handleOscillator(effect.name, 'fattriangle')}>
+                Fat Triangle
+              </button>
 
-              <button onClick={() => handleOscillator('square50')}>Square</button>
-              <button onClick={() => handleOscillator('amsquare')}>AM Square</button>
-              <button onClick={() => handleOscillator('fmsquare')}>FM Square</button>
-              <button onClick={() => handleOscillator('fatsquare')}>Fat Square</button>
+              <button onClick={() => handleOscillator(effect.name, 'square50')}>Square</button>
+              <button onClick={() => handleOscillator(effect.name, 'amsquare')}>AM Square</button>
+              <button onClick={() => handleOscillator(effect.name, 'fmsquare')}>FM Square</button>
+              <button onClick={() => handleOscillator(effect.name, 'fatsquare')}>Fat Square</button>
 
-              <button onClick={() => handleOscillator('sawtooth')}>Sawtooth</button>
-              <button onClick={() => handleOscillator('amsawtooth')}>AM Sawtooth</button>
-              <button onClick={() => handleOscillator('fmsawtooth')}>FM Sawtooth</button>
-              <button onClick={() => handleOscillator('fatsawtooth')}>Fat Sawtooth</button>
+              <button onClick={() => handleOscillator(effect.name, 'sawtooth')}>Sawtooth</button>
+              <button onClick={() => handleOscillator(effect.name, 'amsawtooth')}>
+                AM Sawtooth
+              </button>
+              <button onClick={() => handleOscillator(effect.name, 'fmsawtooth')}>
+                FM Sawtooth
+              </button>
+              <button onClick={() => handleOscillator(effect.name, 'fatsawtooth')}>
+                Fat Sawtooth
+              </button>
             </>
-          )}
-        </div>
-      </div>
-    ));
+          ),
+          name: effect.name,
+        });
+      } else {
+        inputs.push({
+          component: (
+            <InputSlider
+              className="effect-slider"
+              label={effect.name}
+              initialValue={effect.initialValue}
+              step={effect.step}
+              minValue={effect.minValue}
+              maxValue={effect.maxValue}
+              key={effect.name}
+              handleChange={effect.handleChange}
+            />
+          ),
+          name: effect.name,
+        });
+      }
+    });
+
+    return (
+      <>
+        {inputs.map(input => (
+          <div className="control-block" key={`${input.name}input`}>
+            <h3>{input.name.toUpperCase()}</h3>
+            <div className="controls">{input.component}</div>
+          </div>
+        ))}
+      </>
+    );
+  };
+
+  const getEffectParams = effectData => {
+    const effectParams = [];
+    effectData.effects.map(effect => {
+      const effectObject = { name: effect.name ? effect.name : effect };
+      const isObject = typeof effect === 'object';
+      const hasValue = !!effect.value;
+      const hasType = !!effect.type;
+      const maxValue = 3;
+      const minValue = 0.1;
+      const step = 0.1;
+
+      if (hasType) {
+        effectObject.type = effect.type;
+      } else if (!isObject) {
+        const { instrument } = effectData;
+        effectObject.initialValue = instrument[effect];
+        effectObject.minValue = minValue;
+        effectObject.maxValue = instrument[effect] + 10;
+        effectObject.step = 0.1;
+        effectObject.handleChange = value => {
+          customInstrument[effect] = value;
+        };
+      } else if (hasValue) {
+        effectObject.initialValue = effect.value;
+        effectObject.minValue = effect.minValue;
+        effectObject.maxValue = effect.maxValue > 3000 ? 5000 : effect.maxValue;
+        effectObject.step = effect.maxValue > 3000 ? 1 : step;
+        effectObject.handleChange = value => handleChange(effect.name, effect, 'value', value);
+      } else {
+        const effectProperties = [];
+        Object.keys(effect).map(key => {
+          if (allowedEffects.includes(key)) {
+            const effectWithParams = { name: key };
+            effectWithParams.initialValue = effect[key];
+            effectWithParams.minValue = minValue;
+            effectWithParams.maxValue = effect[key] > 3000 ? 5000 : maxValue;
+            effectWithParams.step = effect[key] > 3000 ? 1 : step;
+            effectWithParams.handleChange = value => handleChange(effect.name, effect, key, value);
+            effectProperties.push(effectWithParams);
+          }
+        });
+        effectObject.properties = effectProperties;
+      }
+
+      effectParams.push(effectObject);
+    });
+
+    return effectParams;
+  };
+
+  const getControlEffects = instrument => {
+    const effects = [];
+    Object.keys(instrument).map(effect => {
+      if (allowedEffects.includes(effect)) {
+        if (typeof instrument[effect] === 'object') {
+          instrument[effect].name = effect;
+          effects.push(instrument[effect]);
+        } else {
+          effects.push(effect);
+        }
+      }
+    });
+    return { effects, instrument };
   };
 
   return (

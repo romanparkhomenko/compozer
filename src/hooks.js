@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { instruments } from './utilities/instruments';
 
-/** Compose function to simply create Higher Order Functions.
+/** Compoze function to simply create Higher Order Functions.
  * The purpose of the compose function is to easily implement
  * function composition by aggregating functions to render the
  * desired component.
  * */
-export const compose = (...functions) => initialValue =>
+export const compoze = (...functions) => initialValue =>
   functions.reduceRight((acc, currFunction) => currFunction(acc), initialValue);
 
 export const useInputValue = initialValue => {

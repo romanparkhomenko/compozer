@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useCycle } from 'framer-motion';
-import { compose, useInstrument, usePlaying, useDimensions, useWindowWidth } from './hooks';
+import { useInstrument, usePlaying, useDimensions, useWindowWidth } from './hooks';
 import { instruments } from './utilities/instruments';
 import { Instrument, MidiSong, InstrumentControls, Plugins, Animation } from './components';
 

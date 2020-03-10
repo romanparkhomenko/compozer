@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import Select from 'react-select';
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { effects } from '../../utilities/effects';
 import { colors } from '../../styles';
 import { useAudioEffects } from '../../hooks';
 import { InputSlider } from '../index';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const Plugins = ({ className, customInstrument, children }) => {
   const [showControls, setShowControls] = useState(false);
@@ -223,6 +223,7 @@ const styledEffect = styled(Plugins)`
     display: none;
     &.open {
       display: flex;
+      color: white;
     }
     flex-flow: row wrap;
     justify-content: center;

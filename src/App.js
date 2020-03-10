@@ -12,7 +12,6 @@ export const App = () => {
   const [isOpen, toggleOpen] = useCycle(false, true);
   const containerRef = useRef(null);
   const { height } = useDimensions(containerRef);
-
   const controls = {
     open: (height = 1000) => ({
       clipPath: `circle(${height * 2 + 200}px at 40px 40px)`,

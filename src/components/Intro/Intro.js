@@ -4,9 +4,10 @@ import PropTypes from 'prop-types';
 import { motion, useCycle } from 'framer-motion';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Tone from 'tone';
 import colors from '../../styles/colors';
 
-export const Intro = ({ className }) => {
+export const Intro = ({ className, customInstrument }) => {
   const [audioContext, toggleAudioContext] = useCycle(false, true);
   const controls = {
     open: (height = 1000) => ({
@@ -34,7 +35,15 @@ export const Intro = ({ className }) => {
         <motion.div className="start-screen" variants={controls}>
           <h2>Welcome to Compozer</h2>
           <div className="start-context">
-            <button onClick={toggleAudioContext}>Get Started</button>
+            <button
+              onClick={() => {
+                toggleAudioContext();
+                customInstrument.voices[0].oscillator.type = 'fatsawtooth';
+                Tone.Transport.start(0);
+              }}
+            >
+              Get Started
+            </button>
             <p className="warning">
               Fair warning, you may want to start with your volume at 50%. Synthesizers with effects
               can get pretty loud. If you're on mobile, make sure your phone isn't muted.

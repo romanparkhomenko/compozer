@@ -58,7 +58,7 @@ export const App = () => {
 
   return (
     <div className="app">
-      <Intro className="intro-section" />
+      <Intro className="intro-section" customInstrument={customInstrument} />
       <motion.div animate={isOpen ? 'short' : 'big'} className="animation">
         <Animation
           className="animation-container"

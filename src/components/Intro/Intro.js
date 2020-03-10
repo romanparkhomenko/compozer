@@ -37,7 +37,6 @@ export const Intro = ({ className }) => {
             <button onClick={toggleAudioContext}>Get Started</button>
             <p className="warning">
               Fair warning, you may want to start with your volume at 50%. Synthesizers with effects
-              {/* eslint-disable-next-line react/no-unescaped-entities */}
               can get pretty loud. If you're on mobile, make sure your phone isn't muted.
             </p>
           </div>
@@ -72,6 +71,7 @@ const styledIntro = styled(Intro)`
       font-size: 3rem;
       font-weight: 700;
       margin: 0 0 2rem;
+      text-align: center;
     }
     p.intro {
       color: ${colors.fog};
@@ -110,6 +110,7 @@ const styledIntro = styled(Intro)`
       text-align: center;
       margin: 2rem 0;
       max-width: 500px;
+      padding: 1rem;
     }
     button {
       -webkit-appearance: none;
